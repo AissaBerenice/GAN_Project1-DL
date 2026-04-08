@@ -9,6 +9,10 @@ Usage:
 For experiments, import the subclass directly:
     from experiments.exp1_baseline import Exp1Config
     cfg = Exp1Config()
+
+Colab credit guide (T4 GPU):
+    SimpleGAN  10 epochs  ~25 min
+    AttGAN     10 epochs  ~90 min per experiment
 """
 
 from pathlib import Path
@@ -16,12 +20,11 @@ from pathlib import Path
 
 class Config:
     # ── Experiment name ───────────────────────────────────────────────
-    # Results and checkpoints are saved to subfolders named after this.
     EXPERIMENT_NAME = "default"
 
     # ── Paths ─────────────────────────────────────────────────────────
     ROOT     = Path(__file__).parent.resolve()
-    DATA_DIR = ROOT / "data"          # torchvision downloads CelebA here
+    DATA_DIR = ROOT / "data"
 
     @property
     def RESULTS_DIR(self):
@@ -34,7 +37,6 @@ class Config:
     # ── Dataset ───────────────────────────────────────────────────────
     IMG_SIZE = 128
 
-    # 13 attributes chosen from CelebA's 40
     ATTRS = [
         "Bald", "Bangs", "Black_Hair", "Blond_Hair", "Brown_Hair",
         "Bushy_Eyebrows", "Eyeglasses", "Male",
@@ -44,17 +46,17 @@ class Config:
     N_ATTRS = len(ATTRS)   # 13
 
     # ── Training ──────────────────────────────────────────────────────
-    BATCH_SIZE  = 32
-    N_EPOCHS    = 30
+    BATCH_SIZE  = 32    # safe for T4 16 GB at 128x128
+    N_EPOCHS    = 10    # enough to see clear results; raise to 30 for full run
     LR          = 0.0002
     BETA1       = 0.5
     BETA2       = 0.999
     NUM_WORKERS = 2
 
     # ── AttGAN loss weights (paper defaults) ──────────────────────────
-    LAMBDA_REC   = 100.0   # reconstruction loss weight
-    LAMBDA_CLS_D =  10.0   # discriminator classification weight
-    LAMBDA_CLS_G =   1.0   # generator classification weight
+    LAMBDA_REC   = 100.0
+    LAMBDA_CLS_D =  10.0
+    LAMBDA_CLS_G =   1.0
 
     # ── Architecture ──────────────────────────────────────────────────
     ENC_DIM = 64
@@ -62,12 +64,12 @@ class Config:
     DIS_DIM = 64
 
     # ── Logging ───────────────────────────────────────────────────────
-    SAVE_EVERY      = 5    # save samples + checkpoint every N epochs
-    LOG_EVERY_STEPS = 100  # print batch loss every N steps
+    SAVE_EVERY      = 2    # save samples + checkpoint every 2 epochs
+    LOG_EVERY_STEPS = 200  # print batch loss every 200 steps
 
     # ── Metrics ───────────────────────────────────────────────────────
-    COMPUTE_METRICS   = True   # set False to skip FID/DACID (~5 min on T4)
-    METRICS_N_SAMPLES = 2048
+    COMPUTE_METRICS   = True
+    METRICS_N_SAMPLES = 512   # 512 is plenty for a project; 2048 takes 4x longer
 
     def __init__(self):
         for d in [self.DATA_DIR, self.RESULTS_DIR, self.CHECKPOINT_DIR]:
